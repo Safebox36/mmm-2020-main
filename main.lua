@@ -1,3 +1,5 @@
+local bonfire = require("mmm-2020-main\\bonfire\\main")
+
 local function disp11()
     local o = tes3.getReference('AA_agent')
     if (string.startswith(o.id, 'AA_agent')) then
@@ -40,6 +42,8 @@ local function init()
     event.register('simulate', dispUpdate)
     print('AA MAIN SUCCESS')
     print('==========')
+
+    bonfire.init()
 end
 
 event.register('initialized', init)
