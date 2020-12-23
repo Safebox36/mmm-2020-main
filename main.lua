@@ -1,5 +1,20 @@
 local bonfire = require("mmm-2020-main\\bonfire\\main")
 
+local function removePlayerInventory()
+    local inv = tes3.player.object.inventory
+    for item in tes3.iterate(inv) do
+        print(item.object.id)
+		tes3.transferItem({
+			from = tes3.player,
+			to = tes3.getReference("chargen barrel fatigue"),
+			item = item.object,
+			playSound = false,
+			count = math.abs(item.count),
+			updateGUI = false,
+		})
+	end
+end
+
 local function disp11()
     local o = tes3.getReference('AA_agent')
     if (string.startswith(o.id, 'AA_agent')) then
@@ -33,6 +48,7 @@ local function dispUpdate(e)
         print('test')
         disp10()
     end
+    -- removePlayerInventory()
 end
 
 local function init()

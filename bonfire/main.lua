@@ -6,6 +6,7 @@ function bonfire.lightBonfire(e)
         for i,c in pairs(e.target.sceneNode.children) do
             if (c.name) then
                 print(i .. " - " .. c.name)
+                print("  - " .. c.switchIndex)
                 for j,k in pairs(c.children) do
                     if (k.name) then
                         print("  " .. j .. " - " .. k.name)
