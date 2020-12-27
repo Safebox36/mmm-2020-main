@@ -6,16 +6,17 @@ local function removePlayerInventory()
         print(item.object.id)
 		tes3.transferItem({
 			from = tes3.player,
-			to = tes3.getReference("chargen barrel fatigue"),
+			to = tes3.getReference("AA_GuardChest"),
 			item = item.object,
 			playSound = false,
 			count = math.abs(item.count),
 			updateGUI = false,
 		})
 	end
+    tes3.updateJournal {id = 'AA_Stormwatch_Cult', index = 6, showMessage = false}
 end
 
-local function disp11()
+local function removeAgentFadeIn()
     local o = tes3.getReference('AA_agent')
     if (string.startswith(o.id, 'AA_agent')) then
         mwscript.positionCell {reference = o, cell = 'Toddtest'}
@@ -24,10 +25,10 @@ local function disp11()
     end
 end
 
-local function disp10()
+local function removeAgentFadeOut()
     tes3.fadeOut {duration = 1.0}
     tes3.updateJournal {id = 'AA_StormWatch', index = 11, showMessage = false}
-    timer.start {type = timer.simulate, iterations = 1, duration = 1, callback = disp11}
+    timer.start {type = timer.simulate, iterations = 1, duration = 1, callback = removeAgentFadeIn}
 end
 
 local function dispCellChange(e)
@@ -37,16 +38,20 @@ local function dispCellChange(e)
     --     print(tes3.getJournalIndex {id = 'AA_StormWatch'})
     --     if (e.previousCell.id == 'AA_EK lab' and tes3.getJournalIndex {id = 'AA_StormWatch'} == 10) then
     --         print('test')
-    --         disp10(e.cell)
+    --         removeAgentFadeOut(e.cell)
     --     end
     -- end
 end
 
 local function dispUpdate(e)
-    print(tes3.getJournalIndex {id = 'AA_StormWatch'})
-    if (tes3.getPlayerCell().id == 'AA_EK lab' and tes3.getJournalIndex {id = 'AA_StormWatch'} == 10) then
-        print('test')
-        disp10()
+    -- print(tes3.getJournalIndex {id = 'AA_StormWatch'})
+    if (tes3.getPlayerCell().id == 'Balmora, Caius Cosades\' House' and tes3.getJournalIndex {id = 'AA_StormWatch'} == 10) then
+        -- print('test')
+        removeAgentFadeOut()
+    end
+    if (tes3.getPlayerCell().id == 'A8_Fort Stormwatch, Basement' and tes3.getJournalIndex {id = 'AA_Stormwatch_Cult'} == 5) then
+        -- print('test')
+        removePlayerInventory()
     end
     -- removePlayerInventory()
 end
