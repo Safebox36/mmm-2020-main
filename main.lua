@@ -1,5 +1,25 @@
 local bonfire = require("mmm-2020-main\\bonfire\\main")
 
+local function sabotageBalista(ref)
+    local balistasSabotaged = tes3.getGlobal("AA_balistasSabotaged")
+    if (balistasSabotaged) then
+        tes3.setGlobal("AA_balistasSabotaged", balistasSabotaged + 1)
+    end
+    if (balistasSabotaged < 10) then
+        tes3.messageBox{
+            message = "You have sabotaged a ballista, there are still " .. tostring(10 - tes3.getGlobal("AA_balistasSabotaged")) .. " to go."
+        }
+    else
+        tes3.messageBox{
+            message = "You have sabotaged all the ballistas."
+        }
+        tes3.updateJournal{id = 'AA_Stormwatch_Defenses', index = 5, showMessage = true}
+    end
+    if (ref.data.aa_sabotaged == nil) then
+        ref.data.aa_sabotaged = true
+    end
+end
+
 local function removePlayerInventory()
     local inv = tes3.player.object.inventory
     for item in tes3.iterate(inv) do
@@ -31,16 +51,18 @@ local function removeAgentFadeOut()
     timer.start {type = timer.simulate, iterations = 1, duration = 1, callback = removeAgentFadeIn}
 end
 
-local function dispCellChange(e)
-    -- print(e.previousCell)
-    -- print(e.cell)
-    -- if (e.previousCell) then
-    --     print(tes3.getJournalIndex {id = 'AA_StormWatch'})
-    --     if (e.previousCell.id == 'AA_EK lab' and tes3.getJournalIndex {id = 'AA_StormWatch'} == 10) then
-    --         print('test')
-    --         removeAgentFadeOut(e.cell)
-    --     end
-    -- end
+local function dispActivate(e)
+    if (e.activator == tes3.player) then
+        if (e.target.baseObject.id == "TS_RM_Ballister" and tes3.getJournalIndex {id = 'AA_Stormwatch_Defenses'} < 5) then
+            if (e.target.data.aa_sabotaged == nil) then
+                sabotageBalista(e.target)
+            else
+                tes3.messageBox{
+                    message = "You have already sabotaged this ballista, there are still " .. tostring(10 - tes3.getGlobal("AA_balistasSabotaged")) .. " to go."
+                }
+            end
+        end
+    end
 end
 
 local function dispUpdate(e)
@@ -59,7 +81,7 @@ end
 local function init()
     print('===========')
     print('AA MAIN BEGIN...')
-    event.register('cellChanged', dispCellChange)
+    event.register('activate', dispActivate)
     event.register('simulate', dispUpdate)
     print('AA MAIN SUCCESS')
     print('==========')
