@@ -1,5 +1,25 @@
 local bonfire = require("mmm-2020-main\\bonfire\\main")
 
+local function unbrokenWall()
+    tes3.getReference("AA_CellBrick0").disabled = true
+    tes3.getReference("AA_CellBrick1").disabled = true
+    tes3.getReference("AA_CellBrick2").disabled = true
+    tes3.getReference("AA_CellBrick3").disabled = true
+    tes3.getReference("AA_CellBrick4").disabled = true
+end
+
+local function brokenWall()
+    tes3.getReference("AA_CellBrick0").disabled = false
+    tes3.getReference("AA_CellBrick1").disabled = false
+    tes3.getReference("AA_CellBrick2").disabled = false
+    tes3.getReference("AA_CellBrick3").disabled = false
+    tes3.getReference("AA_CellBrick4").disabled = false
+
+    tes3.getReference("AA_PlaneWall").disabled = true
+    tes3.setGlobal("AA_Escarpe", 2)
+end
+
+
 local function sabotageBalista(ref)
     local balistasSabotaged = tes3.getGlobal("AA_balistasSabotaged")
     if (balistasSabotaged) then
@@ -75,7 +95,13 @@ local function dispUpdate(e)
         -- print('test')
         removePlayerInventory()
     end
-    -- removePlayerInventory()
+    if (tes3.getPlayerCell().id == "A8_Fort Stormwatch, Basement") then
+        if (tes3.getGlobal("AA_Escarpe") == 0) then
+            unbrokenWall()
+        elseif (tes3.getGlobal("AA_Escarpe") == 1) then
+            brokenWall()
+        end
+    end
 end
 
 local function init()
