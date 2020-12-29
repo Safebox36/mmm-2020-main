@@ -105,6 +105,20 @@ local function dispActivate(e)
         if (e.target.baseObject.id == "TS_dr_dung_cage_03" and tes3.getJournalIndex {id = 'AA_Stormwatch_Hostages'} == 5) then
             freePrisonersFadeOut()
         end
+        if (e.target.baseObject.id == "AA_Lever") then
+            local gate = tes3.getReference("TS_ex_gg_portcullis_1")
+            print(e.target.orientation.x)
+            print(math.abs(e.target.orientation.x))
+            print(math.rad(45) - e.target.orientation.x)
+            print(math.rad(-45) - e.target.orientation.x)
+            if (math.rad(45) - e.target.orientation.x < 1) then
+                gate.position = {gate.position.x, gate.position.y, 992.527}
+                e.target.orientation = {math.rad(-45), e.target.orientation.y, e.target.orientation.z}
+            elseif (math.rad(-45) - e.target.orientation.x < 1) then
+                gate.position = {gate.position.x, gate.position.y, 992.527 + 300}
+                e.target.orientation = {math.rad(45), e.target.orientation.y, e.target.orientation.z}
+            end
+        end
     end
 end
 
