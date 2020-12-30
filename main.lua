@@ -14,8 +14,9 @@ local function freePrisonersFadeIn()
     tes3.fadeIn {duration = 1.0}
 end
 
-local function freePrisonersFadeOut()
+local function freePrisonersFadeOut(ref)
     tes3.fadeOut {duration = 1.0}
+    tes3.playSound{sound = "Door Metal Open", reference = ref}
     tes3.setGlobal("AA_CaptivesFreed", 1)
     timer.start {type = timer.simulate, iterations = 1, duration = 1, callback = freePrisonersFadeIn}
 end
@@ -46,6 +47,7 @@ local function sabotageBalista(ref)
         balistasSabotaged = tes3.getGlobal("AA_balistasSabotaged")
     end
     if (balistasSabotaged < 10) then
+        tes3.playSound{sound = "LockedChest", reference = ref}
         tes3.messageBox{
             message = "You have sabotaged a ballista, there are still " .. tostring(10 - tes3.getGlobal("AA_balistasSabotaged")) .. " to go."
         }
@@ -101,7 +103,7 @@ local function dispActivate(e)
             end
         end
         if (e.target.baseObject.id == "TS_dr_dung_cage_03" and tes3.getJournalIndex {id = 'AA_Stormwatch_Hostages'} == 5 and tes3.getGlobal("AA_CaptivesFreed") == 0) then
-            freePrisonersFadeOut()
+            freePrisonersFadeOut(e.target)
         end
         if (e.target.baseObject.id == "AA_Lever" and tes3.getJournalIndex {id = 'AA_Stormwatch_Defenses'} == 5) then
             local gate = tes3.getReference("TS_ex_gg_portcullis_1")
@@ -178,6 +180,14 @@ local function onMarksmanHit(e)
     end
 end
 
+local function dispCellChange(e)
+    if (tes3.getGlobal("AA_NoTeleport")) then
+        tes3.worldController.flagTeleportingDisabled = true
+    else
+        tes3.worldController.flagTeleportingDisabled = false
+    end
+end
+
 local function init()
     print('===========')
     print('AA MAIN BEGIN...')
@@ -186,6 +196,7 @@ local function init()
     event.register('death', dispDeath)
     event.register("projectileHitObject", onMarksmanHit)
     event.register("attack", onAttack )
+    event.register("cellChanged", dispCellChange)
     print('AA MAIN SUCCESS')
     print('==========')
 
