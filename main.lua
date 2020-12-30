@@ -12,12 +12,11 @@ local function freePrisonersFadeIn()
     warden.position = warden.position + warden.sceneNode.rotation:transpose().y * 128
     player.position = player.position - player.sceneNode.rotation:transpose().y * 128
     tes3.fadeIn {duration = 1.0}
-    tes3.updateJournal {id = 'AA_Stormwatch_Hostages', index = 7, showMessage = false}
 end
 
 local function freePrisonersFadeOut()
     tes3.fadeOut {duration = 1.0}
-    tes3.updateJournal {id = 'AA_Stormwatch_Hostages', index = 6, showMessage = false}
+    tes3.setGlobal("AA_CaptivesFreed", 1)
     timer.start {type = timer.simulate, iterations = 1, duration = 1, callback = freePrisonersFadeIn}
 end
 
@@ -72,8 +71,8 @@ local function removePlayerInventory()
 			count = math.abs(item.count),
 			updateGUI = false,
 		})
-	end
-    tes3.updateJournal {id = 'AA_Stormwatch_Cult', index = 6, showMessage = false}
+    end
+    tes3.setGlobal("AA_InventoryRemoved", 1)
 end
 
 local function removeAgentFadeIn()
@@ -81,19 +80,18 @@ local function removeAgentFadeIn()
     if (string.startswith(o.id, 'AA_agent')) then
         mwscript.positionCell {reference = o, cell = 'Toddtest'}
         tes3.fadeIn {duration = 1.0}
-        tes3.updateJournal {id = 'AA_StormWatch', index = 12, showMessage = false}
     end
 end
 
 local function removeAgentFadeOut()
-    tes3.fadeOut {duration = 1.0}
-    tes3.updateJournal {id = 'AA_StormWatch', index = 11, showMessage = false}
-    timer.start {type = timer.simulate, iterations = 1, duration = 1, callback = removeAgentFadeIn}
+    -- tes3.fadeOut {duration = 1.0}
+    tes3.setGlobal("AA_AgentGone", 1)
+    -- timer.start {type = timer.simulate, iterations = 1, duration = 1, callback = removeAgentFadeIn}
 end
 
 local function dispActivate(e)
     if (e.activator == tes3.player) then
-        if (e.target.baseObject.id == "TS_RM_Ballister" and tes3.getJournalIndex {id = 'AA_Stormwatch_Defenses'} < 5) then
+        if (e.target.baseObject.id == "TS_RM_Ballister" and tes3.getJournalIndex {id = 'AA_Stormwatch_Defenses'} == 1) then
             if (e.target.data.aa_sabotaged == nil) then
                 sabotageBalista(e.target)
             else
@@ -102,29 +100,26 @@ local function dispActivate(e)
                 }
             end
         end
-        if (e.target.baseObject.id == "TS_dr_dung_cage_03" and tes3.getJournalIndex {id = 'AA_Stormwatch_Hostages'} == 5) then
+        if (e.target.baseObject.id == "TS_dr_dung_cage_03" and tes3.getJournalIndex {id = 'AA_Stormwatch_Hostages'} == 5 and tes3.getGlobal("AA_CaptivesFreed") == 0) then
             freePrisonersFadeOut()
         end
-        if (e.target.baseObject.id == "AA_Lever") then
+        if (e.target.baseObject.id == "AA_Lever" and tes3.getJournalIndex {id = 'AA_Stormwatch_Defenses'} == 5) then
             local gate = tes3.getReference("TS_ex_gg_portcullis_1")
-            if (math.rad(45) - e.target.orientation.x < 1) then
-                gate.position = {gate.position.x, gate.position.y, 992.527}
-                e.target.orientation = {math.rad(-45), e.target.orientation.y, e.target.orientation.z}
-            elseif (math.rad(-45) - e.target.orientation.x < 1) then
-                gate.position = {gate.position.x, gate.position.y, 992.527 + 300}
-                e.target.orientation = {math.rad(45), e.target.orientation.y, e.target.orientation.z}
-            end
+            gate.position = {gate.position.x, gate.position.y, 992.527 + 300}
+            e.target.orientation = {math.rad(45), e.target.orientation.y, e.target.orientation.z}
+            tes3.updateJournal {id = 'AA_Stormwatch_Defenses', index = 10, showMessage = true}
         end
     end
 end
 
 local function dispUpdate(e)
     -- print(tes3.getJournalIndex {id = 'AA_StormWatch'})
-    if (tes3.getPlayerCell().id == 'Balmora, Caius Cosades\' House' and tes3.getJournalIndex {id = 'AA_StormWatch'} == 10) then
+    if (tes3.getPlayerCell().id == 'Balmora, Caius Cosades\' House' and tes3.getJournalIndex {id = 'AA_StormWatch'} == 10 and tes3.getGlobal("AA_AgentGone") == 0) then
         -- print('test')
         removeAgentFadeOut()
+        tes3.worldController.flagTeleportingDisabled = true
     end
-    if (tes3.getPlayerCell().id == 'A8_Fort Stormwatch, Basement' and tes3.getJournalIndex {id = 'AA_Stormwatch_Cult'} == 5) then
+    if (tes3.getPlayerCell().id == 'A8_Fort Stormwatch, Basement' and tes3.getJournalIndex {id = 'AA_Stormwatch_Cult'} == 5 and tes3.getGlobal("AA_InventoryRemoved") == 0) then
         -- print('test')
         removePlayerInventory()
     end
@@ -147,12 +142,37 @@ local function dispDeath(e)
             tes3.setGlobal("AA_Enemies_MessHall", tes3.getGlobal("AA_Enemies_MessHall") + 1)
         elseif (tes3.getPlayerCell().id == "A7_Fort Stormwatch, Prison Library") then
             tes3.setGlobal("AA_Enemies_Library", tes3.getGlobal("AA_Enemies_Library") + 1)
-        elseif (string.find(e.reference, "Supply")) then
+        elseif (string.find(e.reference.id, "Supply")) then
             tes3.setGlobal("AA_Enemies_Supply", tes3.getGlobal("AA_Enemies_Supply") + 1)
         end
         if (tes3.getJournalIndex("AA_Stormwatch_Hostages") == 5 and tes3.getGlobal("AA_Enemies_MessHall") + tes3.getGlobal("AA_Enemies_Library") + tes3.getGlobal("AA_Enemies_Supply") == 6 + 9 + 10) then
-            tes3.updateJournal {id = 'AA_Stormwatch_Hostages', index = 10, showMessage = true}
+            -- tes3.updateJournal {id = 'AA_Stormwatch_Hostages', index = 10, showMessage = true}
         end
+    end
+end
+
+local function onAttack(e)
+    local shrineOne = (tes3.getPlayerTarget() == tes3.getReference("aa_bloodshrine01") == true)
+    local shrineTwo = (tes3.getPlayerTarget() == tes3.getReference("aa_bloodshrine02") == true)
+    local shrineThree = (tes3.getPlayerTarget() == tes3.getReference("aa_bloodshrine03") == true)
+    local isPlayer = e.mobile.reference == tes3.player
+    if isPlayer and shrineOne then
+        tes3.setGlobal("aa_bloodshrine_g01", 1)
+    elseif isPlayer and shrineTwo then
+        tes3.setGlobal("aa_bloodshrine_g02", 1)
+    elseif isPlayer and shrineThree then
+        tes3.setGlobal("aa_bloodshrine_g03", 1)
+    end
+end
+
+local function onMarksmanHit(e)
+    if e.firingReference ~= tes3.player then return end
+    if e.target.object.id == "aa_bloodshrine01" then
+        tes3.setGlobal("aa_bloodshrine_g01", 1)
+    elseif e.target.object.id == "aa_bloodshrine02" then
+        tes3.setGlobal("aa_bloodshrine_g02", 1)
+    elseif e.target.object.id == "aa_bloodshrine03" then
+        tes3.setGlobal("aa_bloodshrine_g03", 1)
     end
 end
 
@@ -162,10 +182,12 @@ local function init()
     event.register('activate', dispActivate)
     event.register('simulate', dispUpdate)
     event.register('death', dispDeath)
+    event.register("projectileHitObject", onMarksmanHit)
+    event.register("attack", onAttack )
     print('AA MAIN SUCCESS')
     print('==========')
 
-    bonfire.init()
+    -- bonfire.init()
 end
 
 event.register('initialized', init)
