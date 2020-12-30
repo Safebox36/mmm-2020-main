@@ -75,18 +75,18 @@ local function removePlayerInventory()
     tes3.setGlobal("AA_InventoryRemoved", 1)
 end
 
-local function removeAgentFadeIn()
+local function hideAgent()
     local o = tes3.getReference('AA_agent')
     if (string.startswith(o.id, 'AA_agent')) then
-        mwscript.positionCell {reference = o, cell = 'Toddtest'}
-        tes3.fadeIn {duration = 1.0}
+        o:disable()
     end
 end
 
-local function removeAgentFadeOut()
-    -- tes3.fadeOut {duration = 1.0}
-    tes3.setGlobal("AA_AgentGone", 1)
-    -- timer.start {type = timer.simulate, iterations = 1, duration = 1, callback = removeAgentFadeIn}
+local function showAgent()
+    local o = tes3.getReference('AA_agent')
+    if (string.startswith(o.id, 'AA_agent')) then
+        o:enable()
+    end
 end
 
 local function dispActivate(e)
@@ -114,10 +114,10 @@ end
 
 local function dispUpdate(e)
     -- print(tes3.getJournalIndex {id = 'AA_StormWatch'})
-    if (tes3.getPlayerCell().id == 'Balmora, Caius Cosades\' House' and tes3.getJournalIndex {id = 'AA_StormWatch'} == 10 and tes3.getGlobal("AA_AgentGone") == 0) then
-        -- print('test')
-        removeAgentFadeOut()
-        tes3.worldController.flagTeleportingDisabled = true
+    if (tes3.getPlayerCell().id == 'Balmora, Caius Cosades\' House' and tes3.getJournalIndex {id = 'A2_6_Incarnate'} < 50) then
+        hideAgent()
+    elseif (tes3.getPlayerCell().id == 'Balmora, Caius Cosades\' House' and tes3.getJournalIndex {id = 'A2_6_Incarnate'} >= 50) then
+        showAgent()
     end
     if (tes3.getPlayerCell().id == 'A8_Fort Stormwatch, Basement' and tes3.getJournalIndex {id = 'AA_Stormwatch_Cult'} == 5 and tes3.getGlobal("AA_InventoryRemoved") == 0) then
         -- print('test')
@@ -145,8 +145,10 @@ local function dispDeath(e)
         elseif (string.find(e.reference.id, "Supply")) then
             tes3.setGlobal("AA_Enemies_Supply", tes3.getGlobal("AA_Enemies_Supply") + 1)
         end
-        if (tes3.getJournalIndex("AA_Stormwatch_Hostages") == 5 and tes3.getGlobal("AA_Enemies_MessHall") + tes3.getGlobal("AA_Enemies_Library") + tes3.getGlobal("AA_Enemies_Supply") == 6 + 9 + 10) then
-            -- tes3.updateJournal {id = 'AA_Stormwatch_Hostages', index = 10, showMessage = true}
+        if (tes3.getGlobal("AA_AreasLiberated") < 3) then
+            if (tes3.getJournalIndex("AA_Stormwatch_Hostages") == 5 and tes3.getGlobal("AA_Enemies_MessHall") + tes3.getGlobal("AA_Enemies_Library") + tes3.getGlobal("AA_Enemies_Supply") == 6 + 9 + 10) then
+                tes3.setGlobal("AA_AreasLiberated", 3)
+            end
         end
     end
 end
