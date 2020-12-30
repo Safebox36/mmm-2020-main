@@ -107,10 +107,6 @@ local function dispActivate(e)
         end
         if (e.target.baseObject.id == "AA_Lever") then
             local gate = tes3.getReference("TS_ex_gg_portcullis_1")
-            print(e.target.orientation.x)
-            print(math.abs(e.target.orientation.x))
-            print(math.rad(45) - e.target.orientation.x)
-            print(math.rad(-45) - e.target.orientation.x)
             if (math.rad(45) - e.target.orientation.x < 1) then
                 gate.position = {gate.position.x, gate.position.y, 992.527}
                 e.target.orientation = {math.rad(-45), e.target.orientation.y, e.target.orientation.z}
@@ -145,11 +141,27 @@ local function dispUpdate(e)
     end
 end
 
+local function dispDeath(e)
+    if (e.reference ~= tes3.player and e.reference ~= tes3.getReference("AA_Librarian")) then
+        if (tes3.getPlayerCell().id == "A5_Fort Stormwatch, Mess Hall") then
+            tes3.setGlobal("AA_Enemies_MessHall", tes3.getGlobal("AA_Enemies_MessHall") + 1)
+        elseif (tes3.getPlayerCell().id == "A7_Fort Stormwatch, Prison Library") then
+            tes3.setGlobal("AA_Enemies_Library", tes3.getGlobal("AA_Enemies_Library") + 1)
+        elseif (string.find(e.reference, "Supply")) then
+            tes3.setGlobal("AA_Enemies_Supply", tes3.getGlobal("AA_Enemies_Supply") + 1)
+        end
+        if (tes3.getJournalIndex("AA_Stormwatch_Hostages") == 5 and tes3.getGlobal("AA_Enemies_MessHall") + tes3.getGlobal("AA_Enemies_Library") + tes3.getGlobal("AA_Enemies_Supply") == 6 + 9 + 10) then
+            tes3.updateJournal {id = 'AA_Stormwatch_Hostages', index = 10, showMessage = true}
+        end
+    end
+end
+
 local function init()
     print('===========')
     print('AA MAIN BEGIN...')
     event.register('activate', dispActivate)
     event.register('simulate', dispUpdate)
+    event.register('death', dispDeath)
     print('AA MAIN SUCCESS')
     print('==========')
 
