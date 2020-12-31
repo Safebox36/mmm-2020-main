@@ -35,7 +35,6 @@ local function courtyard7()
 end
 
 local function courtyard6()
-    local molag = tes3.getReference("aa_molag_bal")
     killCultist1()
     -- timer.start {type = timer.simulate, iterations = 1, duration = 1.0, callback = courtyard7}
 end
@@ -194,14 +193,14 @@ local function dispUpdate(e)
         hideAgent()
     elseif (tes3.getPlayerCell().id == 'Balmora, Caius Cosades\' House' and tes3.getJournalIndex {id = 'A2_6_Incarnate'} >= 50) then
         showAgent()
-    elseif (tes3.getPlayerCell().id == 'A3_Fort Stormwatch, Main Hall' and tes3.getJournalIndex {id = 'AA_StormWatch'} == 25 ) then
+    elseif (tes3.getPlayerCell().id == 'Fort Stormwatch, Main Hall' and tes3.getJournalIndex {id = 'AA_StormWatch'} == 25 ) then
         showAgent()
     end
-    if (tes3.getPlayerCell().id == 'A8_Fort Stormwatch, Basement' and tes3.getJournalIndex {id = 'AA_Stormwatch_Cult'} == 5 and tes3.getGlobal("AA_InventoryRemoved") == 0) then
+    if (tes3.getPlayerCell().id == 'Fort Stormwatch, Basement' and tes3.getJournalIndex {id = 'AA_Stormwatch_Cult'} == 5 and tes3.getGlobal("AA_InventoryRemoved") == 0) then
         -- print('test')
         removePlayerInventory()
     end
-    if (tes3.getPlayerCell().id == "A8_Fort Stormwatch, Basement") then
+    if (tes3.getPlayerCell().id == "Fort Stormwatch, Basement") then
         if (tes3.getGlobal("AA_Escarpe") == 0) then
             unbrokenWall()
         elseif (tes3.getGlobal("AA_Escarpe") == 1) then
@@ -212,13 +211,28 @@ local function dispUpdate(e)
             end
         end
     end
+    if (tes3.getGlobal("AA_OF_Appear") == 0 and (tes3.getJournalIndex {id = 'AA_Stormwatch_Cult'} == 10 or tes3.getJournalIndex {id = 'AA_Stormwatch_Hostages'} == 10 or tes3.getJournalIndex {id = 'AA_Stormwatch_Defenses'} == 10)) then
+        local mess = tes3.getReference("AA_OFMessenger")
+        mess.position = tes3.player.position - tes3.player.sceneNode.rotation:transpose().y * 128
+        tes3.setGlobal("AA_OF_Appear", 1)
+        tes3.messageBox{
+            message = "You feel someone walking up behind you..."
+        }
+    elseif (tes3.getGlobal("AA_OF_Appear") == 1 and (tes3.getJournalIndex {id = 'AA_Stormwatch_Cult'} == 10 and tes3.getJournalIndex {id = 'AA_Stormwatch_Hostages'} == 10 and tes3.getJournalIndex {id = 'AA_Stormwatch_Defenses'} == 10) and (tes3.getPlayerCell().id ~= "Fort Stormwatch, Main Hall" and tes3.getPlayerCell().isInterior == true)) then
+        local mess = tes3.getReference("AA_OFMessenger")
+        mess.position = tes3.player.position - tes3.player.sceneNode.rotation:transpose().y * 128
+        tes3.setGlobal("AA_OF_Appear", 2)
+        tes3.messageBox{
+            message = "You feel a familiar presence walking up behind you..."
+        }
+    end
 end
 
 local function dispDeath(e)
     if (e.reference ~= tes3.player and e.reference ~= tes3.getReference("AA_Librarian")) then
-        if (tes3.getPlayerCell().id == "A5_Fort Stormwatch, Mess Hall") then
+        if (tes3.getPlayerCell().id == "Fort Stormwatch, Mess Hall") then
             tes3.setGlobal("AA_Enemies_MessHall", tes3.getGlobal("AA_Enemies_MessHall") + 1)
-        elseif (tes3.getPlayerCell().id == "A7_Fort Stormwatch, Prison Library") then
+        elseif (tes3.getPlayerCell().id == "Fort Stormwatch, Prison Library") then
             tes3.setGlobal("AA_Enemies_Library", tes3.getGlobal("AA_Enemies_Library") + 1)
         elseif (string.find(e.reference.id, "Supply")) then
             tes3.setGlobal("AA_Enemies_Supply", tes3.getGlobal("AA_Enemies_Supply") + 1)
@@ -319,6 +333,14 @@ local function dispCellChange(e)
         tes3.getReference("AA_Cultist_Leader_cs"):disable()
         tes3.getReference("AA_Cultist_Disciple01"):disable()
         tes3.getReference("AA_Cultist_Disciple02"):disable()
+    end
+
+    if (tes3.getGlobal("AA_OF_Appear") == 1 and tes3.getJournalIndex {id = 'AA_Stormwatch_Cult'} + tes3.getJournalIndex {id = 'AA_Stormwatch_Hostages'} + tes3.getJournalIndex {id = 'AA_Stormwatch_Defenses'} < 30) then
+        local mess = tes3.getReference("AA_OFMessenger")
+        mess.position = tes3.player.position - tes3.player.sceneNode.rotation:transpose().z * 10000
+    elseif (tes3.getGlobal("AA_OF_Appear") == 2) then
+        local mess = tes3.getReference("AA_OFMessenger")
+        mess.position = tes3.player.position - tes3.player.sceneNode.rotation:transpose().z * 10000
     end
 end
 
