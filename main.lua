@@ -226,6 +226,11 @@ local function dispUpdate(e)
             message = "You feel a familiar presence walking up behind you..."
         }
     end
+    if (tes3.getGlobal("AA_QuestComplete") == 0 and tes3.getJournalIndex {id = 'AA_StormWatch'} == 40) then
+        tes3.setGlobal("AA_QuestComplete", 1)
+        tes3.positionCell{oritentation = {0, 0, 180}, position = {62681, 184288, 188}}
+        tes3.setGlobal("GameHour", 9.0)
+    end
 end
 
 local function dispDeath(e)
