@@ -1,12 +1,77 @@
 local bonfire = require("mmm-2020-main\\bonfire\\main")
 
-local function courtyard2(params)
-    timer.start {type = timer.simulate, iterations = 1, duration = 13, callback = courtyard1}
+local function killCultistLeader()
+    local leader = tes3.getReference("AA_Cultist_Leader_cs")
+    leader.mobile.health.current = 1
+    tes3.getReference("aa_molag_bal").mobile:startCombat(leader.mobile)
+end
+
+local function killCultist2()
+    local disc2 = tes3.getReference("AA_Cultist_Disciple02")
+    disc2.mobile.health.current = 1
+    tes3.getReference("aa_molag_bal").mobile:startCombat(disc2.mobile)
+end
+
+local function killCultist1()
+    local disc1 = tes3.getReference("AA_Cultist_Disciple01")
+    disc1.mobile.health.current = 1
+    tes3.getReference("aa_molag_bal").mobile:startCombat(disc1.mobile)
+end
+
+local function courtyard8()
+    tes3.updateJournal {id = 'AA_StormWatch', index = 30, showMessage = true}
+    tes3.updateJournal {id = 'AA_StormWatch_Cult ', index = 15, showMessage = true}
+
+    tes3.mobilePlayer.controlsDisabled = false
+    tes3.mobilePlayer.jumpingDisabled = false
+    tes3.mobilePlayer.attackDisabled = false
+    tes3.mobilePlayer.magicDisabled = false
+    tes3.mobilePlayer.mouseLookDisabled = false
+end
+
+local function courtyard7()
+    tes3.say{reference = "aa_molag_bal", soundPath = "AA\\Vo\\molag_beckon.wav"}
+    timer.start {type = timer.simulate, iterations = 1, duration = 12.0, callback = courtyard8}
+end
+
+local function courtyard6()
+    local molag = tes3.getReference("aa_molag_bal")
+    killCultist1()
+    -- timer.start {type = timer.simulate, iterations = 1, duration = 1.0, callback = courtyard7}
+end
+
+-- local function courtyard5()
+--     tes3.say{reference = "AA_Cultist_Leader_cs", soundPath = "AA\\leader_2.wav"}
+--     timer.start {type = timer.simulate, iterations = 1, duration = 2.0, callback = courtyard6}
+-- end
+
+local function courtyard4()
+    tes3.say{reference = "aa_molag_bal", soundPath = "AA\\Vo\\molag_execution.wav"}
+    timer.start {type = timer.simulate, iterations = 1, duration = 16.0, callback = courtyard6}
+end
+
+local function courtyard3()
+    tes3.say{reference = "AA_Cultist_Leader_cs", soundPath = "AA\\leader_1.wav"}
+    timer.start {type = timer.simulate, iterations = 1, duration = 14.0, callback = courtyard4}
+end
+
+local function courtyard2()
+    tes3.getReference("aa_molag_bal"):enable()
+    timer.start {type = timer.simulate, iterations = 1, duration = 2.0, callback = courtyard3}
 end
 
 local function courtyard1()
+    tes3.mobilePlayer.controlsDisabled = true
+    tes3.mobilePlayer.jumpingDisabled = true
+    tes3.mobilePlayer.attackDisabled = true
+    tes3.mobilePlayer.magicDisabled = true
+    tes3.mobilePlayer.mouseLookDisabled = true
+
+    tes3.getReference("AA_Cultist_Leader_cs"):enable()
+    tes3.getReference("AA_Cultist_Disciple01"):enable()
+    tes3.getReference("AA_Cultist_Disciple02"):enable()
     tes3.createReference{object = "aa_coldsummonfx", position = tes3.getReference("aa_molag_bal").position}
-    timer.start {type = timer.simulate, iterations = 1, duration = 3, callback = courtyard1}
+    timer.start {type = timer.simulate, iterations = 1, duration = 1.0, callback = courtyard2}
 end
 
 local function freePrisonersFadeIn()
@@ -158,6 +223,18 @@ local function dispDeath(e)
         elseif (string.find(e.reference.id, "Supply")) then
             tes3.setGlobal("AA_Enemies_Supply", tes3.getGlobal("AA_Enemies_Supply") + 1)
         end
+
+        if (e.reference == tes3.getReference("aa_molag_bal")) then
+            tes3.updateJournal {id = 'AA_StormWatch', index = 35, showMessage = true}
+        end
+
+        if (e.reference == tes3.getReference("AA_Cultist_Disciple01")) then
+            killCultist2()
+        elseif (e.reference == tes3.getReference("AA_Cultist_Disciple02")) then
+            killCultistLeader()
+            tes3.say{reference = "AA_Cultist_Leader_cs", soundPath = "AA\\leader_2.wav"}
+            timer.start {type = timer.simulate, iterations = 1, duration = 3.0, callback = courtyard7}
+        end
     end
 end
 
@@ -175,15 +252,15 @@ local function onAttack(e)
     end
     if (tes3.getGlobal("AA_AreasLiberated") < 3) then
         if (tes3.getJournalIndex {id = 'AA_StormSide_OF'} >= 5) then
-            if (tes3.getGlobal("AA_Enemies_MessHall") + tes3.getGlobal("aa_bloodshrine_g01") == 6 + 1) then
+            if (tes3.getGlobal("AA_MessLiberated") == 0 and tes3.getGlobal("AA_Enemies_MessHall") + tes3.getGlobal("aa_bloodshrine_g01") == 6 + 1) then
                 tes3.setGlobal("AA_AreasLiberated", tes3.getGlobal("AA_AreasLiberated") + 1 )
                 tes3.setGlobal("AA_MessLiberated", 1)
             end
-            if (tes3.getGlobal("AA_Enemies_Library") + tes3.getGlobal("aa_bloodshrine_g02") == 9 + 1) then
+            if (tes3.getGlobal("AA_LibraryLiberated") == 0 and tes3.getGlobal("AA_Enemies_Library") + tes3.getGlobal("aa_bloodshrine_g02") == 9 + 1) then
                 tes3.setGlobal("AA_AreasLiberated", tes3.getGlobal("AA_AreasLiberated") + 1 )
                 tes3.setGlobal("AA_LibraryLiberated", 1)
             end
-            if (tes3.getGlobal("AA_Enemies_Supply") + tes3.getGlobal("aa_bloodshrine_g03") == 11 + 1) then
+            if (tes3.getGlobal("AA_SupplyLiberated") == 0 and tes3.getGlobal("AA_Enemies_Supply") + tes3.getGlobal("aa_bloodshrine_g03") == 11 + 1) then
                 tes3.setGlobal("AA_AreasLiberated", tes3.getGlobal("AA_AreasLiberated") + 1 )
                 tes3.setGlobal("AA_SupplyLiberated", 1)
             end
@@ -206,15 +283,15 @@ local function onMarksmanHit(e)
     end
     if (tes3.getGlobal("AA_AreasLiberated") < 3) then
         if (tes3.getJournalIndex {id = 'AA_StormSide_OF'} >= 5) then
-            if (tes3.getGlobal("AA_Enemies_MessHall") + tes3.getGlobal("aa_bloodshrine_g01") == 6 + 1) then
+            if (tes3.getGlobal("AA_MessLiberated") == 0 and tes3.getGlobal("AA_Enemies_MessHall") + tes3.getGlobal("aa_bloodshrine_g01") == 6 + 1) then
                 tes3.setGlobal("AA_AreasLiberated", tes3.getGlobal("AA_AreasLiberated") + 1 )
                 tes3.setGlobal("AA_MessLiberated", 1)
             end
-            if (tes3.getGlobal("AA_Enemies_Library") + tes3.getGlobal("aa_bloodshrine_g02") == 9 + 1) then
+            if (tes3.getGlobal("AA_LibraryLiberated") == 0 and tes3.getGlobal("AA_Enemies_Library") + tes3.getGlobal("aa_bloodshrine_g02") == 9 + 1) then
                 tes3.setGlobal("AA_AreasLiberated", tes3.getGlobal("AA_AreasLiberated") + 1 )
                 tes3.setGlobal("AA_LibraryLiberated", 1)
             end
-            if (tes3.getGlobal("AA_Enemies_Supply") + tes3.getGlobal("aa_bloodshrine_g03") == 11 + 1) then
+            if (tes3.getGlobal("AA_SupplyLiberated") == 0 and tes3.getGlobal("AA_Enemies_Supply") + tes3.getGlobal("aa_bloodshrine_g03") == 11 + 1) then
                 tes3.setGlobal("AA_AreasLiberated", tes3.getGlobal("AA_AreasLiberated") + 1 )
                 tes3.setGlobal("AA_SupplyLiberated", 1)
             end
@@ -229,11 +306,20 @@ end
 local function dispCellChange(e)
     if (tes3.getGlobal("AA_NoTeleport") == 1) then
         tes3.worldController.flagTeleportingDisabled = true
+        tes3.setGlobal("GameHour", 22.0)
+        tes3.getReference("aa_molag_bal"):disable()
     else
         tes3.worldController.flagTeleportingDisabled = false
     end
 
-    courtyard1()
+    if (tes3.getJournalIndex {id = 'AA_StormWatch'} == 25 and tes3.getPlayerCell().isInterior == false) then
+        courtyard1()
+    else
+        tes3.getReference("aa_molag_bal"):disable()
+        tes3.getReference("AA_Cultist_Leader_cs"):disable()
+        tes3.getReference("AA_Cultist_Disciple01"):disable()
+        tes3.getReference("AA_Cultist_Disciple02"):disable()
+    end
 end
 
 local function init()
