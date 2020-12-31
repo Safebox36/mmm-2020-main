@@ -1,7 +1,15 @@
 local bonfire = require("mmm-2020-main\\bonfire\\main")
 
-local function courtyard1(params)
+local function courtyard2(params)
     timer.start {type = timer.simulate, iterations = 1, duration = 13, callback = courtyard1}
+end
+
+local function courtyard1()
+    if (tes3.getPlayerCell().id == "Sheogorad Region 24, 28") then
+        mwscript.explodeSpell(params)
+        tes3.cast{reference = "AA_Cultist_Leader_cs", target = "aa_molag_bal", spell = "frost bolt"}
+    end
+    timer.start {type = timer.simulate, iterations = 1, duration = 3, callback = courtyard1}
 end
 
 local function freePrisonersFadeIn()
@@ -171,7 +179,7 @@ local function onAttack(e)
     elseif isPlayer and shrineThree then
         tes3.setGlobal("aa_bloodshrine_g03", 1)
     end
-    if (tes3.getGlobal("aa_bloodshrine_g01") and tes3.getGlobal("aa_bloodshrine_g02") and tes3.getGlobal("aa_bloodshrine_g03")) then
+    if (isPlayer and tes3.getGlobal("aa_bloodshrine_g01") and tes3.getGlobal("aa_bloodshrine_g02") and tes3.getGlobal("aa_bloodshrine_g03")) then
         tes3.updateJournal {id = 'AA_StormSide_OF', index = 15, showMessage = true}
     end
 end
@@ -196,6 +204,8 @@ local function dispCellChange(e)
     else
         tes3.worldController.flagTeleportingDisabled = false
     end
+
+    -- courtyard1()
 end
 
 local function init()
