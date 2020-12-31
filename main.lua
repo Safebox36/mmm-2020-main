@@ -188,8 +188,10 @@ local function onAttack(e)
                 tes3.setGlobal("AA_SupplyLiberated", 1)
             end
         end
-    elseif (tes3.getGlobal("AA_AreasLiberated") == 3) then
+    end
+    if (tes3.getGlobal("AA_AreasLiberated") == 3) then
         tes3.updateJournal {id = 'AA_StormSide_OF', index = 15, showMessage = true}
+        tes3.setGlobal("AA_AreasLiberated", 4)
     end
 end
 
@@ -217,8 +219,10 @@ local function onMarksmanHit(e)
                 tes3.setGlobal("AA_SupplyLiberated", 1)
             end
         end
-    elseif (tes3.getGlobal("AA_AreasLiberated") == 3) then
+    end
+    if (tes3.getGlobal("AA_AreasLiberated") == 3) then
         tes3.updateJournal {id = 'AA_StormSide_OF', index = 15, showMessage = true}
+        tes3.setGlobal("AA_AreasLiberated", 4)
     end
 end
 
