@@ -5,10 +5,7 @@ local function courtyard2(params)
 end
 
 local function courtyard1()
-    if (tes3.getPlayerCell().id == "Sheogorad Region 24, 28") then
-        mwscript.explodeSpell(params)
-        tes3.cast{reference = "AA_Cultist_Leader_cs", target = "aa_molag_bal", spell = "frost bolt"}
-    end
+    tes3.createReference{object = "aa_coldsummonfx", position = tes3.getReference("aa_molag_bal").position}
     timer.start {type = timer.simulate, iterations = 1, duration = 3, callback = courtyard1}
 end
 
@@ -132,6 +129,8 @@ local function dispUpdate(e)
         hideAgent()
     elseif (tes3.getPlayerCell().id == 'Balmora, Caius Cosades\' House' and tes3.getJournalIndex {id = 'A2_6_Incarnate'} >= 50) then
         showAgent()
+    elseif (tes3.getPlayerCell().id == 'A3_Fort Stormwatch, Main Hall' and tes3.getJournalIndex {id = 'AA_StormWatch'} == 25 ) then
+        showAgent()
     end
     if (tes3.getPlayerCell().id == 'A8_Fort Stormwatch, Basement' and tes3.getJournalIndex {id = 'AA_Stormwatch_Cult'} == 5 and tes3.getGlobal("AA_InventoryRemoved") == 0) then
         -- print('test')
@@ -159,11 +158,6 @@ local function dispDeath(e)
         elseif (string.find(e.reference.id, "Supply")) then
             tes3.setGlobal("AA_Enemies_Supply", tes3.getGlobal("AA_Enemies_Supply") + 1)
         end
-        if (tes3.getGlobal("AA_AreasLiberated") < 3) then
-            if (tes3.getJournalIndex("AA_Stormwatch_Hostages") == 5 and tes3.getGlobal("AA_Enemies_MessHall") + tes3.getGlobal("AA_Enemies_Library") + tes3.getGlobal("AA_Enemies_Supply") == 6 + 9 + 10) then
-                tes3.setGlobal("AA_AreasLiberated", 3)
-            end
-        end
     end
 end
 
@@ -179,7 +173,22 @@ local function onAttack(e)
     elseif isPlayer and shrineThree then
         tes3.setGlobal("aa_bloodshrine_g03", 1)
     end
-    if (isPlayer and tes3.getGlobal("aa_bloodshrine_g01") and tes3.getGlobal("aa_bloodshrine_g02") and tes3.getGlobal("aa_bloodshrine_g03")) then
+    if (tes3.getGlobal("AA_AreasLiberated") < 3) then
+        if (tes3.getJournalIndex {id = 'AA_StormSide_OF'} >= 5) then
+            if (tes3.getGlobal("AA_Enemies_MessHall") + tes3.getGlobal("aa_bloodshrine_g01") == 6 + 1) then
+                tes3.setGlobal("AA_AreasLiberated", tes3.getGlobal("AA_AreasLiberated") + 1 )
+                tes3.setGlobal("AA_MessLiberated", 1)
+            end
+            if (tes3.getGlobal("AA_Enemies_Library") + tes3.getGlobal("aa_bloodshrine_g02") == 9 + 1) then
+                tes3.setGlobal("AA_AreasLiberated", tes3.getGlobal("AA_AreasLiberated") + 1 )
+                tes3.setGlobal("AA_LibraryLiberated", 1)
+            end
+            if (tes3.getGlobal("AA_Enemies_Supply") + tes3.getGlobal("aa_bloodshrine_g03") == 11 + 1) then
+                tes3.setGlobal("AA_AreasLiberated", tes3.getGlobal("AA_AreasLiberated") + 1 )
+                tes3.setGlobal("AA_SupplyLiberated", 1)
+            end
+        end
+    elseif (tes3.getGlobal("AA_AreasLiberated") == 3) then
         tes3.updateJournal {id = 'AA_StormSide_OF', index = 15, showMessage = true}
     end
 end
@@ -193,19 +202,34 @@ local function onMarksmanHit(e)
     elseif e.target.object.id == "aa_bloodshrine03" then
         tes3.setGlobal("aa_bloodshrine_g03", 1)
     end
-    if (tes3.getGlobal("aa_bloodshrine_g01") and tes3.getGlobal("aa_bloodshrine_g02") and tes3.getGlobal("aa_bloodshrine_g03")) then
+    if (tes3.getGlobal("AA_AreasLiberated") < 3) then
+        if (tes3.getJournalIndex {id = 'AA_StormSide_OF'} >= 5) then
+            if (tes3.getGlobal("AA_Enemies_MessHall") + tes3.getGlobal("aa_bloodshrine_g01") == 6 + 1) then
+                tes3.setGlobal("AA_AreasLiberated", tes3.getGlobal("AA_AreasLiberated") + 1 )
+                tes3.setGlobal("AA_MessLiberated", 1)
+            end
+            if (tes3.getGlobal("AA_Enemies_Library") + tes3.getGlobal("aa_bloodshrine_g02") == 9 + 1) then
+                tes3.setGlobal("AA_AreasLiberated", tes3.getGlobal("AA_AreasLiberated") + 1 )
+                tes3.setGlobal("AA_LibraryLiberated", 1)
+            end
+            if (tes3.getGlobal("AA_Enemies_Supply") + tes3.getGlobal("aa_bloodshrine_g03") == 11 + 1) then
+                tes3.setGlobal("AA_AreasLiberated", tes3.getGlobal("AA_AreasLiberated") + 1 )
+                tes3.setGlobal("AA_SupplyLiberated", 1)
+            end
+        end
+    elseif (tes3.getGlobal("AA_AreasLiberated") == 3) then
         tes3.updateJournal {id = 'AA_StormSide_OF', index = 15, showMessage = true}
     end
 end
 
 local function dispCellChange(e)
-    if (tes3.getGlobal("AA_NoTeleport")) then
+    if (tes3.getGlobal("AA_NoTeleport") == 1) then
         tes3.worldController.flagTeleportingDisabled = true
     else
         tes3.worldController.flagTeleportingDisabled = false
     end
 
-    -- courtyard1()
+    courtyard1()
 end
 
 local function init()
