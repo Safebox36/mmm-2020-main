@@ -1,5 +1,9 @@
 local bonfire = require("mmm-2020-main\\bonfire\\main")
 
+local function courtyard1(params)
+    timer.start {type = timer.simulate, iterations = 1, duration = 13, callback = courtyard1}
+end
+
 local function freePrisonersFadeIn()
     local captive1 = tes3.getReference("AA_hostage01")
     local captive2 = tes3.getReference("AA_hostage02")
@@ -167,6 +171,9 @@ local function onAttack(e)
     elseif isPlayer and shrineThree then
         tes3.setGlobal("aa_bloodshrine_g03", 1)
     end
+    if (tes3.getGlobal("aa_bloodshrine_g01") and tes3.getGlobal("aa_bloodshrine_g02") and tes3.getGlobal("aa_bloodshrine_g03")) then
+        tes3.updateJournal {id = 'AA_StormSide_OF', index = 15, showMessage = true}
+    end
 end
 
 local function onMarksmanHit(e)
@@ -177,6 +184,9 @@ local function onMarksmanHit(e)
         tes3.setGlobal("aa_bloodshrine_g02", 1)
     elseif e.target.object.id == "aa_bloodshrine03" then
         tes3.setGlobal("aa_bloodshrine_g03", 1)
+    end
+    if (tes3.getGlobal("aa_bloodshrine_g01") and tes3.getGlobal("aa_bloodshrine_g02") and tes3.getGlobal("aa_bloodshrine_g03")) then
+        tes3.updateJournal {id = 'AA_StormSide_OF', index = 15, showMessage = true}
     end
 end
 
