@@ -1,4 +1,4 @@
-local bonfire = require("mmm-2020-main\\bonfire\\main")
+local bonfire = require("AA-IoS\\bonfire\\main")
 
 local function killCultistLeader()
     local leader = tes3.getReference("AA_Cultist_Leader_cs")
@@ -30,7 +30,7 @@ local function courtyard8()
 end
 
 local function courtyard7()
-    tes3.playSound{reference = "aa_molag_bal", sound = "AA_molag_beckon"}
+    tes3.playSound{reference = "aa_molag_bal", sound = "AA_molag_beckon, mixChannel = tes3.audioMixType.voice"}
     timer.start {type = timer.simulate, iterations = 1, duration = 12.0, callback = courtyard8}
 end
 
@@ -45,12 +45,12 @@ end
 -- end
 
 local function courtyard4()
-    tes3.playSound{reference = "aa_molag_bal", sound = "AA_molag_execution"}
+    tes3.playSound{reference = "aa_molag_bal", sound = "AA_molag_execution", mixChannel = tes3.audioMixType.voice}
     timer.start {type = timer.simulate, iterations = 1, duration = 16.0, callback = courtyard6}
 end
 
 local function courtyard3()
-    tes3.playSound{reference = "AA_Cultist_Leader_cs", sound = "AA_Leader1"}
+    tes3.playSound{reference = "AA_Cultist_Leader_cs", sound = "AA_Leader1", mixChannel = tes3.audioMixType.voice}
     timer.start {type = timer.simulate, iterations = 1, duration = 14.0, callback = courtyard4}
 end
 
@@ -114,17 +114,17 @@ local function brokenWall()
 end
 
 local function switchBallistaModel(ref)
+    local found = false
     for i,c in pairs(ref.sceneNode.children) do
-        if (c.name and c.name == "AASwitch") then
+        if (c.name and c.name == "AASwitch" and found == false) then
             for j,k in pairs(c.children) do
-                if (k.name and k.name == "Disabled") then
+                if (k.name and k.name == "Disabled" and found == false) then
                     c.switchIndex = j
-                    goto done
+                    found = true
                 end
             end
         end
     end
-    ::done::
 end
 
 local function sabotageBalista(ref)
@@ -166,15 +166,15 @@ local function removePlayerInventory()
 end
 
 local function hideAgent()
-    local o = tes3.getReference('AA_agent')
-    if (string.startswith(o.id, 'AA_agent')) then
+    local o = tes3.getReference('AA_agent01')
+    if (string.startswith(o.id, 'AA_agent01')) then
         o:disable()
     end
 end
 
 local function showAgent()
-    local o = tes3.getReference('AA_agent')
-    if (string.startswith(o.id, 'AA_agent')) then
+    local o = tes3.getReference('AA_agent01')
+    if (string.startswith(o.id, 'AA_agent01')) then
         o:enable()
     end
 end
@@ -190,7 +190,7 @@ local function dispActivate(e)
                 }
             end
         end
-        if (e.target.baseObject.id == "TS_dr_dung_cage_03" and tes3.getJournalIndex {id = 'AA_Stormwatch_Hostages'} == 5 and tes3.getGlobal("AA_CaptivesFreed") == 0) then
+        if (e.target.baseObject.id == "TS_dr_dung_cage_03" and tes3.getJournalIndex {id = 'AA_Stormwatch_Hostages'} >= 1 and tes3.getGlobal("AA_CaptivesFreed") == 0) then
             freePrisonersFadeOut(e.target)
         end
         if (e.target.baseObject.id == "AA_Lever" and tes3.getJournalIndex {id = 'AA_Stormwatch_Defenses'} == 5) then
@@ -208,10 +208,7 @@ local function dispUpdate(e)
         hideAgent()
     elseif (tes3.getPlayerCell().id == 'Balmora, Caius Cosades\' House' and tes3.getJournalIndex {id = 'A2_6_Incarnate'} >= 50) then
         showAgent()
-    elseif (tes3.getPlayerCell().id == 'Fort Stormwatch, Main Hall' and tes3.getJournalIndex {id = 'AA_StormWatch'} == 25 ) then
-        showAgent()
-    end
-    if (tes3.getPlayerCell().id == 'Fort Stormwatch, Basement' and tes3.getJournalIndex {id = 'AA_Stormwatch_Cult'} == 5 and tes3.getGlobal("AA_InventoryRemoved") == 0) then
+    elseif (tes3.getPlayerCell().id == 'Fort Stormwatch, Basement' and tes3.getJournalIndex {id = 'AA_Stormwatch_Cult'} == 5 and tes3.getGlobal("AA_InventoryRemoved") == 0) then
         -- print('test')
         removePlayerInventory()
     end
@@ -226,20 +223,12 @@ local function dispUpdate(e)
             end
         end
     end
-    if (tes3.getGlobal("AA_OF_Appear") == 0 and (tes3.getJournalIndex {id = 'AA_Stormwatch_Cult'} == 10 or tes3.getJournalIndex {id = 'AA_Stormwatch_Hostages'} == 10 or tes3.getJournalIndex {id = 'AA_Stormwatch_Defenses'} == 10)) then
+    if (tes3.getGlobal("AA_OF_Appear") == 0 and (tes3.getJournalIndex {id = 'AA_StormSide_OF'} == 0) and (tes3.getJournalIndex {id = 'AA_Stormwatch_Cult'} == 10 or tes3.getJournalIndex {id = 'AA_Stormwatch_Hostages'} == 10 or tes3.getJournalIndex {id = 'AA_Stormwatch_Defenses'} == 10)) then
         local mess = tes3.getReference("AA_OFMessenger")
-        mess.position = tes3.player.position - tes3.player.sceneNode.rotation:transpose().y * 128
+        local newPosition = tes3.player.position - tes3.player.sceneNode.rotation:transpose().y * 128
+        tes3.positionCell({ reference = mess, cell = tes3.player.cell, position = newPosition })
         tes3.setGlobal("AA_OF_Appear", 1)
-        tes3.messageBox{
-            message = "You feel someone walking up behind you..."
-        }
-    elseif (tes3.getGlobal("AA_OF_Appear") == 1 and (tes3.getJournalIndex {id = 'AA_Stormwatch_Cult'} == 10 and tes3.getJournalIndex {id = 'AA_Stormwatch_Hostages'} == 10 and tes3.getJournalIndex {id = 'AA_Stormwatch_Defenses'} == 10) and (tes3.getPlayerCell().id ~= "Fort Stormwatch, Main Hall" and tes3.getPlayerCell().isInterior == true)) then
-        local mess = tes3.getReference("AA_OFMessenger")
-        mess.position = tes3.player.position - tes3.player.sceneNode.rotation:transpose().y * 128
-        tes3.setGlobal("AA_OF_Appear", 2)
-        tes3.messageBox{
-            message = "You feel a familiar presence walking up behind you..."
-        }
+        tes3.messageBox("You feel someone walking up behind you...")
     end
     if (tes3.getGlobal("AA_QuestComplete") == 0 and tes3.getJournalIndex {id = 'AA_StormWatch'} == 40) then
         tes3.setGlobal("AA_QuestComplete", 1)
@@ -266,84 +255,85 @@ local function dispDeath(e)
             killCultist2()
         elseif (e.reference == tes3.getReference("AA_Cultist_Disciple02")) then
             killCultistLeader()
-            tes3.playSound{reference = "AA_Cultist_Leader_cs", soundPath = "AA_Leader_2"}
+            tes3.playSound{reference = "AA_Cultist_Leader_cs", soundPath = "AA_Leader2", mixChannel = tes3.audioMixType.voice}
             timer.start {type = timer.simulate, iterations = 1, duration = 3.0, callback = courtyard7}
         end
     end
 end
 
-local function onAttack(e)
-    local shrineOne = (tes3.getPlayerTarget() == tes3.getReference("aa_bloodshrine01") == true)
-    local shrineTwo = (tes3.getPlayerTarget() == tes3.getReference("aa_bloodshrine02") == true)
-    local shrineThree = (tes3.getPlayerTarget() == tes3.getReference("aa_bloodshrine03") == true)
-    local isPlayer = e.mobile.reference == tes3.player
-    if isPlayer and shrineOne then
+local function onShrineAttacked(id)
+    if id == "aa_bloodshrine01" then
         tes3.setGlobal("aa_bloodshrine_g01", 1)
-    elseif isPlayer and shrineTwo then
+    elseif id == "aa_bloodshrine02" then
         tes3.setGlobal("aa_bloodshrine_g02", 1)
-    elseif isPlayer and shrineThree then
+    elseif id == "aa_bloodshrine03" then
         tes3.setGlobal("aa_bloodshrine_g03", 1)
+    else
+        return -- wasn't actually a shrine
     end
-    if (tes3.getGlobal("AA_AreasLiberated") < 3) then
-        if (tes3.getJournalIndex {id = 'AA_StormSide_OF'} >= 5) then
-            if (tes3.getGlobal("AA_MessLiberated") == 0 and tes3.getGlobal("AA_Enemies_MessHall") + tes3.getGlobal("aa_bloodshrine_g01") == 6 + 1) then
+
+    if tes3.getGlobal("AA_AreasLiberated") < 3 then
+        if tes3.getJournalIndex{id = 'AA_StormSide_OF'} >= 5 then
+            debug.log(tes3.getGlobal("AA_MessLiberated"))
+            debug.log(tes3.getGlobal("AA_Enemies_MessHall"))
+            debug.log(tes3.getGlobal("aa_bloodshrine_g01"))
+            if (
+                tes3.getGlobal("AA_MessLiberated") == 0
+                and tes3.getGlobal("AA_Enemies_MessHall") == 6
+                and tes3.getGlobal("aa_bloodshrine_g01") == 1
+            ) then
                 tes3.setGlobal("AA_AreasLiberated", tes3.getGlobal("AA_AreasLiberated") + 1 )
                 tes3.setGlobal("AA_MessLiberated", 1)
             end
-            if (tes3.getGlobal("AA_LibraryLiberated") == 0 and tes3.getGlobal("AA_Enemies_Library") + tes3.getGlobal("aa_bloodshrine_g02") == 9 + 1) then
+            if (
+                tes3.getGlobal("AA_LibraryLiberated") == 0
+                and tes3.getGlobal("AA_Enemies_Library") == 9
+                and tes3.getGlobal("aa_bloodshrine_g02") == 1
+            ) then
                 tes3.setGlobal("AA_AreasLiberated", tes3.getGlobal("AA_AreasLiberated") + 1 )
                 tes3.setGlobal("AA_LibraryLiberated", 1)
             end
-            if (tes3.getGlobal("AA_SupplyLiberated") == 0 and tes3.getGlobal("AA_Enemies_Supply") + tes3.getGlobal("aa_bloodshrine_g03") == 11 + 1) then
+            if (
+                tes3.getGlobal("AA_SupplyLiberated") == 0
+                and tes3.getGlobal("AA_Enemies_Supply") == 11
+                and tes3.getGlobal("aa_bloodshrine_g03") == 1
+            ) then
                 tes3.setGlobal("AA_AreasLiberated", tes3.getGlobal("AA_AreasLiberated") + 1 )
                 tes3.setGlobal("AA_SupplyLiberated", 1)
             end
         end
     end
-    if (tes3.getGlobal("AA_AreasLiberated") == 3) then
+
+    if tes3.getGlobal("AA_AreasLiberated") == 3 then
         tes3.updateJournal {id = 'AA_StormSide_OF', index = 15, showMessage = true}
         tes3.setGlobal("AA_AreasLiberated", 4)
     end
 end
 
-local function onMarksmanHit(e)
-    if e.firingReference ~= tes3.player then return end
-    if e.target.object.id == "aa_bloodshrine01" then
-        tes3.setGlobal("aa_bloodshrine_g01", 1)
-    elseif e.target.object.id == "aa_bloodshrine02" then
-        tes3.setGlobal("aa_bloodshrine_g02", 1)
-    elseif e.target.object.id == "aa_bloodshrine03" then
-        tes3.setGlobal("aa_bloodshrine_g03", 1)
-    end
-    if (tes3.getGlobal("AA_AreasLiberated") < 3) then
-        if (tes3.getJournalIndex {id = 'AA_StormSide_OF'} >= 5) then
-            if (tes3.getGlobal("AA_MessLiberated") == 0 and tes3.getGlobal("AA_Enemies_MessHall") + tes3.getGlobal("aa_bloodshrine_g01") == 6 + 1) then
-                tes3.setGlobal("AA_AreasLiberated", tes3.getGlobal("AA_AreasLiberated") + 1 )
-                tes3.setGlobal("AA_MessLiberated", 1)
-            end
-            if (tes3.getGlobal("AA_LibraryLiberated") == 0 and tes3.getGlobal("AA_Enemies_Library") + tes3.getGlobal("aa_bloodshrine_g02") == 9 + 1) then
-                tes3.setGlobal("AA_AreasLiberated", tes3.getGlobal("AA_AreasLiberated") + 1 )
-                tes3.setGlobal("AA_LibraryLiberated", 1)
-            end
-            if (tes3.getGlobal("AA_SupplyLiberated") == 0 and tes3.getGlobal("AA_Enemies_Supply") + tes3.getGlobal("aa_bloodshrine_g03") == 11 + 1) then
-                tes3.setGlobal("AA_AreasLiberated", tes3.getGlobal("AA_AreasLiberated") + 1 )
-                tes3.setGlobal("AA_SupplyLiberated", 1)
-            end
+local function onAttack(e)
+    if e.reference == tes3.player then
+        local target = tes3.getPlayerTarget()
+        if target then
+            onShrineAttacked(target.id:lower())
         end
     end
-    if (tes3.getGlobal("AA_AreasLiberated") == 3) then
-        tes3.updateJournal {id = 'AA_StormSide_OF', index = 15, showMessage = true}
-        tes3.setGlobal("AA_AreasLiberated", 4)
+end
+
+local function onMarksmanHit(e)
+    if e.firingReference == tes3.player then
+        onShrineAttacked(e.target.id:lower())
     end
 end
 
 local function dispCellChange(e)
     if (tes3.getGlobal("AA_NoTeleport") == 1) then
         tes3.worldController.flagTeleportingDisabled = true
+	tes3.worldController.flagLevitationDisabled = true
         tes3.setGlobal("GameHour", 22.0)
         tes3.getReference("aa_molag_bal"):disable()
     else
         tes3.worldController.flagTeleportingDisabled = false
+	tes3.worldController.flagLevitationDisabled = false
     end
 
     if (tes3.getJournalIndex {id = 'AA_StormWatch'} == 25 and tes3.getPlayerCell().isInterior == false) then
@@ -358,6 +348,13 @@ local function dispCellChange(e)
     if (tes3.getGlobal("AA_OF_Appear") == 1 and tes3.getJournalIndex {id = 'AA_Stormwatch_Cult'} + tes3.getJournalIndex {id = 'AA_Stormwatch_Hostages'} + tes3.getJournalIndex {id = 'AA_Stormwatch_Defenses'} < 30) then
         local mess = tes3.getReference("AA_OFMessenger")
         mess.position = tes3.player.position - tes3.player.sceneNode.rotation:transpose().z * 10000
+	end
+	if (tes3.getGlobal("AA_OF_Appear") == 1 and (tes3.getJournalIndex {id = 'AA_Stormwatch_Cult'} == 10 and tes3.getJournalIndex {id = 'AA_Stormwatch_Hostages'} == 10 and tes3.getJournalIndex {id = 'AA_Stormwatch_Defenses'} == 10) and (tes3.getPlayerCell().id ~= "Fort Stormwatch, Main Hall" and tes3.getPlayerCell().isInterior == true)) then
+        local mess = tes3.getReference("AA_OFMessenger")
+        local newPosition = tes3.player.position + tes3.player.sceneNode.rotation:transpose().y * 128
+        tes3.positionCell({ reference = mess, cell = tes3.player.cell, position = newPosition })
+        tes3.setGlobal("AA_OF_Appear", 2)
+        tes3.messageBox("You feel a familiar presence walking up behind you...")
     elseif (tes3.getGlobal("AA_OF_Appear") == 2) then
         local mess = tes3.getReference("AA_OFMessenger")
         mess.position = tes3.player.position - tes3.player.sceneNode.rotation:transpose().z * 10000
