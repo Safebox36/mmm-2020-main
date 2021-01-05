@@ -30,7 +30,7 @@ local function courtyard8()
 end
 
 local function courtyard7()
-    tes3.playSound{reference = "aa_molag_bal", sound = "AA_molag_beckon, mixChannel = tes3.audioMixType.voice"}
+    tes3.playSound{reference = "aa_molag_bal", sound = "AA_molag_beckon", mixChannel = tes3.audioMixType.voice}
     timer.start {type = timer.simulate, iterations = 1, duration = 12.0, callback = courtyard8}
 end
 
