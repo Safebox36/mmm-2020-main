@@ -113,6 +113,20 @@ local function brokenWall()
     tes3.setGlobal("AA_Escarpe", 2)
 end
 
+local function switchBallistaModel(ref)
+    for i,c in pairs(ref.sceneNode.children) do
+        if (c.name and c.name == "AASwitch") then
+            for j,k in pairs(c.children) do
+                if (k.name and k == "Disabled") then
+                    c.switchIndex = j
+                    goto done
+                end
+            end
+        end
+    end
+    ::done::
+end
+
 local function sabotageBalista(ref)
     local balistasSabotaged = tes3.getGlobal("AA_balistasSabotaged")
     if (balistasSabotaged) then
@@ -131,6 +145,7 @@ local function sabotageBalista(ref)
         tes3.updateJournal{id = 'AA_Stormwatch_Defenses', index = 5, showMessage = true}
     end
     if (ref.data.aa_sabotaged == nil) then
+        switchBallistaModel(ref)
         ref.data.aa_sabotaged = true
     end
 end
