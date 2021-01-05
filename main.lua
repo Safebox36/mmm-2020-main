@@ -114,15 +114,10 @@ local function brokenWall()
 end
 
 local function switchBallistaModel(ref)
-    local found = false
     for i,c in pairs(ref.sceneNode.children) do
         if (c.name and c.name == "AASwitch" and found == false) then
-            for j,k in pairs(c.children) do
-                if (k.name and k.name == "Disabled" and found == false) then
-                    c.switchIndex = j
-                    found = true
-                end
-            end
+            c.switchIndex = 2
+            break
         end
     end
 end
