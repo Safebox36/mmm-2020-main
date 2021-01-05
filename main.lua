@@ -30,7 +30,7 @@ local function courtyard8()
 end
 
 local function courtyard7()
-    tes3.say{reference = "aa_molag_bal", soundPath = "AA\\Vo\\molag_beckon.wav"}
+    tes3.playSound{reference = "aa_molag_bal", sound = "AA_molag_beckon"}
     timer.start {type = timer.simulate, iterations = 1, duration = 12.0, callback = courtyard8}
 end
 
@@ -45,12 +45,12 @@ end
 -- end
 
 local function courtyard4()
-    tes3.say{reference = "aa_molag_bal", soundPath = "AA\\Vo\\molag_execution.wav"}
+    tes3.playSound{reference = "aa_molag_bal", sound = "AA_molag_execution"}
     timer.start {type = timer.simulate, iterations = 1, duration = 16.0, callback = courtyard6}
 end
 
 local function courtyard3()
-    tes3.say{reference = "AA_Cultist_Leader_cs", soundPath = "AA\\leader_1.wav"}
+    tes3.playSound{reference = "AA_Cultist_Leader_cs", sound = "AA_Leader1"}
     timer.start {type = timer.simulate, iterations = 1, duration = 14.0, callback = courtyard4}
 end
 
@@ -117,7 +117,7 @@ local function switchBallistaModel(ref)
     for i,c in pairs(ref.sceneNode.children) do
         if (c.name and c.name == "AASwitch") then
             for j,k in pairs(c.children) do
-                if (k.name and k == "Disabled") then
+                if (k.name and k.name == "Disabled") then
                     c.switchIndex = j
                     goto done
                 end
@@ -266,7 +266,7 @@ local function dispDeath(e)
             killCultist2()
         elseif (e.reference == tes3.getReference("AA_Cultist_Disciple02")) then
             killCultistLeader()
-            tes3.say{reference = "AA_Cultist_Leader_cs", soundPath = "AA\\leader_2.wav"}
+            tes3.playSound{reference = "AA_Cultist_Leader_cs", soundPath = "AA_Leader_2"}
             timer.start {type = timer.simulate, iterations = 1, duration = 3.0, callback = courtyard7}
         end
     end
