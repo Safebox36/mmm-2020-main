@@ -116,7 +116,7 @@ end
 local function switchBallistaModel(ref)
     for i,c in pairs(ref.sceneNode.children) do
         if (c.name and c.name == "AASwitch" and found == false) then
-            c.switchIndex = 2
+            c.switchIndex = 1
             break
         end
     end
